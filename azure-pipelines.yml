@@ -1,0 +1,63 @@
+trigger:
+- master
+- maint/*
+
+jobs:
+- job: windows_amd64
+  displayName: 'Windows (amd64)'
+  pool: Hosted
+  steps:
+  - checkout: self
+    submodules: true
+  - powershell: . '$(Build.SourcesDirectory)\build.ps1'
+    displayName: 'Build'
+    workingDirectory: '$(Build.BinariesDirectory)'
+    env:
+      CMAKE_OPTIONS: -G"Visual Studio 14 2015 Win64"
+  - task: CopyFiles@2
+    displayName: 'Copy Build Output'
+    inputs:
+      sourceFolder: $(libgit2.outputdir)
+      contents: $(libgit2.libraryname)
+      targetFolder: $(Build.ArtifactStagingDirectory)/win-x64/native
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Library'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'runtimes'
+
+- job: macos
+  displayName: 'macOS'
+  pool:
+    vmImage: 'macOS 10.13'
+  steps:
+  - checkout: self
+    submodules: true
+  - bash: . '$(Build.SourcesDirectory)/build.sh'
+    displayName: 'Build'
+    workingDirectory: '$(Build.BinariesDirectory)'
+  - task: CopyFiles@2
+    displayName: 'Copy Build Output'
+    inputs:
+      sourceFolder: $(libgit2.outputdir)
+      contents: $(libgit2.libraryname)
+      targetFolder: $(Build.ArtifactStagingDirectory)/osx/native
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Library'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'runtimes'
+
+- job: package
+  displayName: 'Package'
+  pool: Hosted
+  dependsOn:
+  - windows_amd64
+  - macos
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts'
+    inputs:
+      buildType: 'current'
+      downloadPath: '$(System.ArtifactsDirectory)'
+      artifactName: 'runtimes'

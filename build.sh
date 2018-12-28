@@ -20,3 +20,6 @@ cmake "${LIBGIT2_DIR}" \
       -DUSE_BUNDLED_ZLIB=ON \
       -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}"
 cmake --build .
+
+echo "##vso[task.setvariable variable=libgit2.outputdir]${BUILD_DIR}"
+echo "##vso[task.setvariable variable=libgit2.libraryname]${LIBGIT2_FILENAME}"
