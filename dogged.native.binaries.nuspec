@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Dogged.Native.Binaries</id>
+    <version>0.0.0</version>
+    <authors>ethomson</authors>
+    <owners>ethomson</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/ethomson/dogged</projectUrl>
+    <iconUrl>http://dogged.edwardthomson.com/logos/dogged-wireframe.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Native binary support for Dogged</description>
+    <copyright>Copyright (c) Edward Thomson and Dogged Contributors</copyright>
+    <tags>dogged libgit2</tags>
+  </metadata>
+</package>
