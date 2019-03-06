@@ -1,6 +1,6 @@
 Dogged.Native.Binaries
 ======================
-[![Build Status](https://dev.azure.com/ethomson/dogged.native.binaries/_apis/build/status/ethomson.dogged.native.binaries?branchName=master)](https://dev.azure.com/ethomson/dogged.native.binaries/_build/latest?definitionId=47?branchName=master)
+[![Build Status](https://dev.azure.com/ethomson/dogged.native.binaries/_apis/build/status/dogged.native.binaries?branchName=master)](https://dev.azure.com/ethomson/dogged.native.binaries/_build/latest?definitionId=57&branchName=master)
 
 [Dogged](https://github.com/ethomson/dogged) and is a .NET wrapper around
 [libgit2](https://github.com/libgit2/libgit2); since libgit2 is a native
