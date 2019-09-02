@@ -3,6 +3,28 @@ trigger:
 - maint/*
 
 jobs:
+- job: linux_amd64
+  displayName: 'Linux (amd64)'
+  pool:
+    vmImage: 'Ubuntu 16.04'
+  steps:
+  - checkout: self
+    submodules: true
+  - bash: . '$(Build.SourcesDirectory)/build.sh'
+    displayName: 'Build'
+    workingDirectory: '$(Build.BinariesDirectory)'
+  - task: CopyFiles@2
+    displayName: 'Copy Build Output'
+    inputs:
+      sourceFolder: $(libgit2.outputdir)
+      contents: $(libgit2.libraryname)
+      targetFolder: $(Build.ArtifactStagingDirectory)/linux-x64/native
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Library'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'runtimes'
+
 - job: windows_amd64
   displayName: 'Windows (amd64)'
   pool:
