@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Build
+      id: build
+      run: |
+        mkdir build
+        cd build
+ 
+        BUILD_TYPE="${{env.BUILD_TYPE}}"
+        BUILD_TYPE="${BUILD_TYPE:-RelWithDebInfo}"
+        LIBGIT2_SRC="${GITHUB_WORKSPACE}/libgit2"
+        SHA=${SHA:-$(git --git-dir="${LIBGIT2_SRC}/.git" rev-parse --short=7 HEAD)}
+        LIBGIT2_BASENAME="git2-${SHA}"
+        
+        case $(uname -s) in
+        Darwin)
+          PLATFORM="osx"
+          LIBGIT2_FILENAME="lib${LIBGIT2_BASENAME}.dylib"
+          ;;
+        MINGW*)
+          PLATFORM="win-x64"
+          LIBGIT2_FILENAME="${BUILD_TYPE}/${LIBGIT2_BASENAME}.dll"
+          ;;
+        Linux)
+          PLATFORM="linux-x64"
+          LIBGIT2_FILENAME="lib${LIBGIT2_BASENAME}.so"
+          ;;
+        *)
+          echo "Unknown platform" 1>&2
+          false
+          ;;
+        esac
+
+        cmake "${LIBGIT2_SRC}" \
+          -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+          -DBUILD_SHARED_LIBS=ON \
+          -DBUILD_CLAR=OFF \
+          -DUSE_SSH=OFF \
+          -DUSE_BUNDLED_ZLIB=ON \
+          -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}"
+        cmake --build . --config ${BUILD_TYPE}
+
+        echo "::set-output name=platform::${PLATFORM}"
+        echo "::set-output name=path::build/${LIBGIT2_FILENAME}"
+      shell: bash
+
+    - name: Upload Library
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{steps.build.outputs.platform}}
+        path: ${{steps.build.outputs.path}}
+
+  package:
+    needs: build
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        mkdir -p build/runtimes/linux-x64
+        mkdir -p build/runtimes/win-x64
+        choco install nuget.commandline
+    - name: Download linux-x64
+      uses: actions/download-artifact@v1
+      with:
+        name: 'linux-x64'
+        path: build/runtimes/linux-x64/native
+    - name: Download win-x64
+      uses: actions/download-artifact@v1
+      with:
+        name: 'win-x64'
+        path: build/runtimes/win-x64/native
+    - name: Build Package
+      id: build
+      run: |
+        $version = GitVersion.exe | ConvertFrom-Json        
+        cd build
+        . ..\generate_props.ps1
+        nuget pack -version $($version.LegacySemVer) -basepath . ..\dogged.native.binaries.nuspec
+        Write-Host "::set-output name=package::dogged.native.binaries.$($version.LegacySemVer).nupkg"
+    - name: Upload Package
+      uses: actions/upload-artifact@v1
+      with:
+        name: nuget
+        path: build/${{steps.build.outputs.package}}
