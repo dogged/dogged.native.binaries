@@ -17,7 +17,7 @@ if ($Env:SHA) {
 
 function Recurse-Directory($path) {
   foreach ($item in Get-ChildItem $path) {
-    $itemPath = Join-Path -Path $path -ChildPath $item
+    $itemPath = $item.FullName
 
     if ($item -is [System.IO.DirectoryInfo]) {
       Recurse-Directory($itemPath)
@@ -30,9 +30,7 @@ function Recurse-Directory($path) {
 $ShaAbbreviation = $Sha.Substring(0,7)
 $LibraryFilename = "git2-${ShaAbbreviation}"
 
-New-Item -ItemType Directory -Force -Path build | Out-Null
-
-$PropsFile = Join-Path -Path build -ChildPath Dogged.Native.Binaries.props
+$PropsFile = "Dogged.Native.Binaries.props"
 Set-Content -Encoding UTF8 ${PropsFile} @"
 <Project>
   <PropertyGroup>
@@ -44,7 +42,7 @@ Set-Content -Encoding UTF8 ${PropsFile} @"
 </Project>
 "@
 
-$TargetsFile = Join-Path -Path build -ChildPath Dogged.Native.Binaries.targets
+$TargetsFile = "Dogged.Native.Binaries.targets"
 Set-Content -Encoding UTF8 ${TargetsFile} @'
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
