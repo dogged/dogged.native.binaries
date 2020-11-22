@@ -30,7 +30,9 @@ function Recurse-Directory($path) {
 $ShaAbbreviation = $Sha.Substring(0,7)
 $LibraryFilename = "git2-${ShaAbbreviation}"
 
-$PropsFile = "Dogged.Native.Binaries.props"
+New-Item -ItemType Directory -Force -Path build | Out-Null
+
+$PropsFile = Join-Path -Path build -ChildPath Dogged.Native.Binaries.props
 Set-Content -Encoding UTF8 ${PropsFile} @"
 <Project>
   <PropertyGroup>
@@ -42,7 +44,7 @@ Set-Content -Encoding UTF8 ${PropsFile} @"
 </Project>
 "@
 
-$TargetsFile = "Dogged.Native.Binaries.targets"
+$TargetsFile = Join-Path -Path build -ChildPath Dogged.Native.Binaries.targets
 Set-Content -Encoding UTF8 ${TargetsFile} @'
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
