@@ -17,7 +17,7 @@ if ($Env:SHA) {
 
 function Recurse-Directory($path) {
   foreach ($item in Get-ChildItem $path) {
-    $itemPath = $item.FullName
+    $itemPath = Join-Path -Path $path -ChildPath $item
 
     if ($item -is [System.IO.DirectoryInfo]) {
       Recurse-Directory($itemPath)
