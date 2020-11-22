@@ -75,6 +75,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+      with:
+        submodules: true
     - name: Setup
       run: |
         mkdir -p build/runtimes/linux-x64
@@ -96,14 +98,25 @@ jobs:
       with:
         name: 'win-x64'
         path: build/runtimes/win-x64/native
+    - name: Calculate Version
+      id: version
+      run: |
+        VERSION=$(git describe --tags | \
+          sed -e "s/^v//" | \
+          sed -e "s/-g[0-9a-f]*$//")
+        if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+          VERSION="${VERSION}-pr${{ github.event.number }}"
+        fi
+        echo "Version ${VERSION}"
+        echo "::set-output name=version::${VERSION}"
+      shell: bash
     - name: Build Package
       id: build
       run: |
-        $version = GitVersion.exe | ConvertFrom-Json        
         cd build
         . ..\generate_props.ps1
-        nuget pack -version $($version.LegacySemVer) -basepath . ..\dogged.native.binaries.nuspec
-        Write-Host "::set-output name=package::dogged.native.binaries.$($version.LegacySemVer).nupkg"
+        nuget pack -version ${{steps.version.outputs.version}} -basepath . ..\dogged.native.binaries.nuspec
+        Write-Host "::set-output name=package::dogged.native.binaries.${{steps.version.outputs.version}}.nupkg"
     - name: Upload Package
       uses: actions/upload-artifact@v1
       with:
