@@ -7,6 +7,7 @@
     <owners>ethomson</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/ethomson/dogged</projectUrl>
+    <icon>images/dogged-wireframe.png</icon>
     <iconUrl>https://dogged.app/logos/dogged-wireframe.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Native binary support for Dogged</description>
