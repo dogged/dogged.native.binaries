@@ -120,7 +120,12 @@ jobs:
       id: build
       run: |
         cd build
+
+        mkdir images
+        cp -R ../images/* ./images/
+
         . ..\generate_props.ps1
+
         nuget pack -version ${{steps.version.outputs.version}} -basepath . ..\dogged.native.binaries.nuspec
         Write-Host "::set-output name=package::dogged.native.binaries.${{steps.version.outputs.version}}.nupkg"
     - name: Upload Package
