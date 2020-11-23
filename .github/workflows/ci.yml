@@ -25,13 +25,13 @@ jobs:
       run: |
         mkdir build
         cd build
- 
+
         BUILD_TYPE="${{env.BUILD_TYPE}}"
         BUILD_TYPE="${BUILD_TYPE:-RelWithDebInfo}"
         LIBGIT2_SRC="${GITHUB_WORKSPACE}/libgit2"
         SHA=${SHA:-$(git --git-dir="${LIBGIT2_SRC}/.git" rev-parse --short=7 HEAD)}
         LIBGIT2_BASENAME="git2-${SHA}"
-        
+
         case $(uname -s) in
         Darwin)
           PLATFORM="osx"
@@ -76,8 +76,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
-      with:
-        submodules: true
     - name: Setup
       run: |
         mkdir -p build/runtimes/linux-x64
@@ -102,11 +100,17 @@ jobs:
     - name: Calculate Version
       id: version
       run: |
-        VERSION=$(git describe --tags | \
-          sed -e "s/^v//" | \
-          sed -e "s/-g[0-9a-f]*$//")
         if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-          VERSION="${VERSION}-pr${{ github.event.number }}"
+          SHA=$(git rev-parse --short HEAD)
+          VERSION="$(git describe --tags | \
+            sed -e "s/^v//" | \
+            sed -e "s/-g[0-9a-f]*$//" | \
+            sed -e "s/-[0-9]*$//")-pr${{ github.event.number }}-${SHA}"
+        else
+          VERSION=$(git describe --tags | \
+            sed -e "s/^v//" | \
+            sed -e "s/-g[0-9a-f]*$//" | \
+            sed -e "s/-\([0-9]*\)$/\.\1/")
         fi
         echo "Version ${VERSION}"
         echo "::set-output name=version::${VERSION}"
