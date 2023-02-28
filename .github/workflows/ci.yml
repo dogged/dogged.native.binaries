@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
       with:
         submodules: true
     - name: Build
@@ -62,12 +62,12 @@ jobs:
           -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}"
         cmake --build . --config ${BUILD_TYPE}
 
-        echo "::set-output name=platform::${PLATFORM}"
-        echo "::set-output name=path::build/${LIBGIT2_FILENAME}"
+        echo "platform=${PLATFORM}" >> $GITHUB_OUTPUT
+        echo "path=build/${LIBGIT2_FILENAME}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Upload Library
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: ${{steps.build.outputs.platform}}
         path: ${{steps.build.outputs.path}}
@@ -115,7 +115,7 @@ jobs:
             sed -e "s/-\([0-9]*\)$/\.\1/")
         fi
         echo "Version ${VERSION}"
-        echo "::set-output name=version::${VERSION}"
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
       shell: bash
     - name: Build Package
       id: build
@@ -128,9 +128,9 @@ jobs:
         . ..\generate_props.ps1
 
         nuget pack -version ${{steps.version.outputs.version}} -basepath . ..\dogged.native.binaries.nuspec
-        Write-Host "::set-output name=package::dogged.native.binaries.${{steps.version.outputs.version}}.nupkg"
+        Write-Host "package=dogged.native.binaries.${{steps.version.outputs.version}}.nupkg" >> $Env:GITHUB_OUTPUT
     - name: Upload Package
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: nuget
         path: build/${{steps.build.outputs.package}}
