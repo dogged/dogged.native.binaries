@@ -64,7 +64,7 @@ jobs:
         cmake "${LIBGIT2_SRC}" \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
           -DBUILD_SHARED_LIBS=ON \
-          -DBUILD_CLAR=OFF \
+          -DBUILD_TESTS=OFF \
           -DUSE_SSH=OFF \
           -DUSE_BUNDLED_ZLIB=ON \
           -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}" \
