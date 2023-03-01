@@ -13,9 +13,17 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        platform:
+        - name: Linux (amd64)
+          os: ubuntu-latest
+        - name: macOS (amd64, arm64)
+          os: macos-latest
+          cmake_options: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        - name: Windows (amd64)
+          os: windows-latest
 
-    runs-on: ${{matrix.os}}
+    name: "Build: ${{ matrix.platform.name }}"
+    runs-on: ${{ matrix.platform.os }}
 
     steps:
     - name: Checkout
@@ -56,10 +64,11 @@ jobs:
         cmake "${LIBGIT2_SRC}" \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
           -DBUILD_SHARED_LIBS=ON \
-          -DBUILD_CLAR=OFF \
+          -DBUILD_TESTS=OFF \
           -DUSE_SSH=OFF \
           -DUSE_BUNDLED_ZLIB=ON \
-          -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}"
+          -DLIBGIT2_FILENAME="${LIBGIT2_BASENAME}" \
+          ${{ matrix.platform.cmake_options }}
         cmake --build . --config ${BUILD_TYPE}
 
         echo "platform=${PLATFORM}" >> $GITHUB_OUTPUT
@@ -133,4 +142,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: nuget
-        path: build/${{steps.build.outputs.package}}
+        path: build/${{steps.build.outputs.package}}/Dogged.Native.Binaries.${{steps.version.outputs.version}}.nupkg
