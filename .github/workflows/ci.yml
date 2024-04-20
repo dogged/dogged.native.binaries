@@ -27,7 +27,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Build
@@ -76,7 +76,7 @@ jobs:
       shell: bash
 
     - name: Upload Library
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{steps.build.outputs.platform}}
         path: ${{steps.build.outputs.path}}
@@ -86,28 +86,25 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup
       run: |
-        mkdir -p build/runtimes/linux-x64
-        mkdir -p build/runtimes/osx
-        mkdir -p build/runtimes/win-x64
+        mkdir -p tmp
+        mkdir -p build/runtimes/linux-x64/native
+        mkdir -p build/runtimes/osx/native
+        mkdir -p build/runtimes/win-x64/native
         choco install nuget.commandline
-    - name: Download linux-x64
-      uses: actions/download-artifact@v1
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
       with:
-        name: 'linux-x64'
-        path: build/runtimes/linux-x64/native
-    - name: Download osx
-      uses: actions/download-artifact@v1
-      with:
-        name: 'osx'
-        path: build/runtimes/osx/native
-    - name: Download win-x64
-      uses: actions/download-artifact@v1
-      with:
-        name: 'win-x64'
-        path: build/runtimes/win-x64/native
+        path: tmp
+    - name: Set up Artifacts
+      run: |
+        mv tmp/linux-x64/* build/runtimes/linux-x64/native
+        mv tmp/osx/* build/runtimes/osx/native
+        mv tmp/win-x64/* build/runtimes/win-x64/native
     - name: Calculate Version
       id: version
       run: |
@@ -139,7 +136,7 @@ jobs:
         nuget pack -version ${{steps.version.outputs.version}} -basepath . ..\dogged.native.binaries.nuspec
         Write-Host "package=dogged.native.binaries.${{steps.version.outputs.version}}.nupkg" >> $Env:GITHUB_OUTPUT
     - name: Upload Package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nuget
         path: build/${{steps.build.outputs.package}}/Dogged.Native.Binaries.${{steps.version.outputs.version}}.nupkg
